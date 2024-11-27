@@ -1,0 +1,8 @@
+./kaggle.json
+# misc
+.DS_Store
+
+env* 
+
+data/CheXpert-v1.0-small/*
+!data/CheXpert-v1.0-small/.gitkeep
