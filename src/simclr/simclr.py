@@ -383,15 +383,18 @@ class SimCLR(object):
     #         self.writer.add_scalar('cosine_lr_decay', scheduler.get_lr()[0], global_step=n_iter)
 
     def _load_pre_trained_weights(self, model):
-        try:
-            checkpoints_folder = os.path.join('./runs', self.config['fine_tune_from'], 'checkpoints')
-            state_dict = torch.load(os.path.join(checkpoints_folder, 'model.pth'))
-            model.load_state_dict(state_dict)
-            print("Loaded pre-trained model with success.")
-        except FileNotFoundError:
-            print("Pre-trained weights not found. Training from scratch.")
-
+        if self.config.get('fine_tune_from'):  # Check if fine_tune_from is set
+            try:
+                checkpoints_folder = os.path.join('./runs', self.config['fine_tune_from'], 'checkpoints')
+                state_dict = torch.load(os.path.join(checkpoints_folder, 'model.pth'))
+                model.load_state_dict(state_dict)
+                print("Loaded pre-trained model with success.")
+            except FileNotFoundError:
+                print(f"No pre-trained weights found in {checkpoints_folder}. Training from scratch.")
+        else:
+            print("No pre-trained weights specified. Training from scratch.")
         return model
+    
 
     def _validate(self, model, valid_loader):
 
