@@ -22,7 +22,9 @@ if __name__ == '__main__':
     config = load_config()
 
     # Check if CUDA is available and set the device
-    device = torch.device(f"cuda:{config['gpu_ids'][0]}" if torch.cuda.is_available() else "cpu")
+    # device = torch.device(f"cuda:{config['gpu_ids'][0]}" if torch.cuda.is_available() else "cpu")
+    device = 'cuda' if torch.cuda.is_available() and len(config['gpu_ids']) > 0 else 'cpu'
+ 
     print(f"Using device: {device}")
     
     from data.dataset import CheXpertDataSet  # Assuming you have this dataset class
