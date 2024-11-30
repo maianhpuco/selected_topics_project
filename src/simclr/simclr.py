@@ -242,8 +242,13 @@ class SimCLR(object):
 
                 xis = xis.to(self.device)
                 xjs = xjs.to(self.device)
+                print("input shape")
+                print(xis.shape)
+                print(xjs.shape)
+                
 
                 loss = self._step(model, xis, xjs, n_iter)
+                print("loss:", loss.item())
                 # Print batch metrics
                 print(f"Epoch [{epoch_counter+1}/{self.config['epochs']}], Batch [{batch_idx+1}/{len(train_loader)}], Loss: {loss.item():.4f}") \
             
@@ -297,7 +302,7 @@ class SimCLR(object):
             counter = 0
             for (xis, xjs), label in valid_loader:
                 xis = xis.to(self.device)
-                xjs = xjs.to(self.device)
+                xjs = xjs.to(self.device
 
                 loss = self._step(model, xis, xjs, counter)
                 valid_loss += loss.item()
