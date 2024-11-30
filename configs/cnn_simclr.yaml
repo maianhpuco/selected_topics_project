@@ -1,5 +1,5 @@
 dataset_path: "/project/hnguyen2/mvu9/datasets/chexpert/CheXpert-v1.0-small"
-batch_size: 256
+batch_size: 64
 epochs: 3
 eval_every_n_epochs: 1
 fine_tune_from: ''
