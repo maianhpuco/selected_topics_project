@@ -302,7 +302,7 @@ class SimCLR(object):
             counter = 0
             for (xis, xjs), label in valid_loader:
                 xis = xis.to(self.device)
-                xjs = xjs.to(self.device
+                xjs = xjs.to(self.device)
 
                 loss = self._step(model, xis, xjs, counter)
                 valid_loss += loss.item()
