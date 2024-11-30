@@ -24,7 +24,11 @@ except ImportError:
 
 # Set the manual seed for reproducibility
 torch.manual_seed(0)
-
+# Function to save the config file to the checkpoint directory
+def _save_config_file(model_checkpoints_folder):
+    if not os.path.exists(model_checkpoints_folder):
+        os.makedirs(model_checkpoints_folder)
+        shutil.copy('./configs/cnn_simclr.yaml', os.path.join(model_checkpoints_folder, 'config.yaml')) 
 class NTXentLoss(torch.nn.Module):
 
     def __init__(self, device, batch_size, temperature, use_cosine_similarity):
