@@ -33,25 +33,37 @@ class GaussianBlur(object):
         return sample
 
 class SimCLRDataloader(object):
-    def __init__(self, batch_size=32, num_workers=1, input_shape='(224, 224, 3)', s=1, csv_path=None, is_train=True):
+    def __init__(self,
+                 dataset_class,
+                 batch_size=32, 
+                 num_workers=1, 
+                 input_shape='(224, 224, 3)', 
+                 s=1, 
+                 data_folder=None, 
+                 csv_path=None, 
+                 is_train=True):
         '''
         csv_train =. './data/csv_files/train.csv' 
         csv_val = './data/csv_files/valid.csv'
         csv_test = './data/csv_files/test.csv' 
         transform =  SimCLRDataTransform(data_augment)
         ''' 
+        self.data_folder = data_folder
         self.csv_path = csv_path 
         self.batch_size = batch_size
         self.num_workers = num_workers
-        self.valid_size = valid_size
         self.s = s
         self.input_shape = eval(input_shape)
         self.is_train = is_train
+        self.dataset_class = dataset_class 
 
     def get_data_loaders(self):
         if self.is_train is True: 
             data_augment = self._get_simclr_pipeline_transform()
-            dataset = CheXpertDataSet(
+            # dataset = CheXpertDataSet(
+            print(self.csv_path)
+            dataset = self.dataset_class(
+                self.data_folder,
                 self.csv_path, 
                 transform=SimCLRDataTransform(data_augment), 
                 policy="ones")  # return (xi, xj), label 

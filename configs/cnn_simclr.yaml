@@ -1,7 +1,7 @@
-dataset_path: /path/to/your/dataset
-model:
-  name: resnet50
-  out_dim: 128
+dataset_path: "/project/hnguyen2/mvu9/datasets/chexpert/CheXpert-v1.0-small"
+# model:
+#   name: resnet18
+#   out_dim: 128
 batch_size: 32 #256 
 epochs: 10
 lr: 0.001

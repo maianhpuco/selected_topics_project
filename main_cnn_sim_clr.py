@@ -1,16 +1,20 @@
 import argparse
 import yaml
 import torch
-from models.resnet_simclr import ResNetSimCLR
-from simclr import SimCLR, train, evaluate
 import os
+import sys
+sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
+
+from simclr import SimCLR, SimCLRDataloader, NTXentLoss, ResNetSimCLR
+from utils.train.cnn_simclr import train  # Correct import for the train function
+from utils.train.cnn_simclr import evaluate  # Assuming evaluate is also in cnn_simclr.py 
 
 # Function to parse command-line arguments
 def parse_args():
     parser = argparse.ArgumentParser(description="SimCLR Training Configuration")
 
     # Dataset parameters
-    parser.add_argument("--dataset_path", type=str, required=True,
+    parser.add_argument("--dataset_path", type=str, required=False,
                         help="Path to the dataset.")
 
     # Model parameters
@@ -40,7 +44,7 @@ def parse_args():
                         help="Comma-separated list of GPU IDs to use (default: '0').")
     parser.add_argument("--fp16_precision", action="store_true",
                         help="Use mixed precision training.")
-    parser.add_argument("--config_file", type=str, default="config.yaml",
+    parser.add_argument("--config_file", type=str, default="configs/cnn_simclr.yaml",
                         help="Path to the configuration YAML file (default: 'config.yaml').")
 
     return parser.parse_args()
@@ -81,27 +85,45 @@ if __name__ == '__main__':
     # Check if CUDA is available and set the device
     device = torch.device(f"cuda:{args.gpu_ids}" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
+    from data.dataset import CheXpertDataSet
 
-    # Dataset initialization (assuming your dataset object is defined elsewhere)
-    from dataset import YourDatasetClass  # Replace with your actual dataset class
-    dataset = YourDatasetClass(config["dataset_path"])
+    train_dataloader = SimCLRDataloader(
+        dataset_class = CheXpertDataSet,
+        data_folder =  "/project/hnguyen2/mvu9/datasets/chexpert/", 
+        csv_path = './data/csv_files/train.csv', 
+        batch_size=config["batch_size"], 
+        num_workers=1, 
+        input_shape="(224, 224, 3)", 
+        s=1, 
+        # csv_path=config["dataset_path"]  # Pass dataset path from config
+    ).get_data_loaders()
 
-    # Initialize model, optimizer, and scheduler
-    model = ResNetSimCLR(base_model=config["model"]["name"], out_dim=config["model"]["out_dim"])
-    optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"])
-    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=config["epochs"], eta_min=0)
+    # Assuming SimCLRDataloader returns a tuple with (train_loader, valid_loader)
 
-    # Move model to the device (GPU or CPU)
-    model = model.to(device)
+    # Example batch from the train loader (to check the data loading)
+    batch_sample = next(iter(train_dataloader))
+    inputs, _ = batch_sample
+    print(inputs[0].shape, inputs[1].shape)  # Check shape of input tensors
 
-    # Create SimCLR instance
-    simclr = SimCLR(dataset, config)
+    # # Initialize model, optimizer, and scheduler
+    # model = ResNetSimCLR(
+    #     base_model=config["model"]["name"], 
+    #     out_dim=config["model"]["out_dim"])
+    
+    # optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"])
+    # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=config["epochs"], eta_min=0)
 
-    # Train the model
-    print("Starting training...")
-    train(simclr, model, optimizer, scheduler)
+    # # Move model to the device (GPU or CPU)
+    # model = model.to(device)
 
-    # Evaluate the model
-    print("Evaluating the model...")
-    evaluate_loss = evaluate(simclr, model)
-    print(f"Final Validation Loss: {evaluate_loss:.4f}")
+    # # Create SimCLR instance
+    # simclr = SimCLR(dataset, config)
+
+    # # Train the model
+    # print("Starting training...")
+    # train(simclr, model, optimizer, scheduler)
+
+    # # Evaluate the model
+    # print("Evaluating the model...")
+    # evaluate_loss = evaluate(simclr, model)
+    # print(f"Final Validation Loss: {evaluate_loss:.4f}")

@@ -2,18 +2,17 @@ from torch.utils.data import Dataset
 import csv
 from PIL import Image
 import torch
-
 class CheXpertDataSet(Dataset):
-    def __init__(self, data_path, transform = None, policy = "ones"):
+    def __init__(self, data_folder, csv_path, transform = None, policy = "ones"):
         """
-        data_path: path to the file containing images with corresponding labels.
+        data_PATH: path to the file containing images with corresponding labels.
         transform: optional transform to be applied on a sample.
         Upolicy: name the policy with regard to the uncertain labels.
         """
         image_names = []
         labels = []
 
-        with open(data_path, "r") as f:
+        with open(csv_path, "r") as f:
             csvReader = csv.reader(f)
             next(csvReader, None) # skip the header
             for line in csvReader:
@@ -37,7 +36,7 @@ class CheXpertDataSet(Dataset):
                     else:
                         label[i] = 0
 
-                image_names.append('./' + image_name)
+                image_names.append(data_folder + image_name)
                 labels.append(label)
 
         self.image_names = image_names

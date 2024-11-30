@@ -3,9 +3,10 @@ include .env
 export 
 
 
-DATASET_PATH := ../data
+DATASET_PATH := "/project/hnguyen2/mvu9/datasets/chexpert"
+DATA_FOLDER :="/project/hnguyen2/mvu9/datasets/chexpert/CheXpert-v1.0-small" 
 # RAWDATA_PATH := ../data/raw
-RAWDATA_PATH := "/project/hnguyen2/mvu9/datasets/chexpert" 
+RAWDATA_PATH := "/project/hnguyen2/mvu9/datasets/chexpert/raw/" 
 MODEL_NAME := resnet50
 BATCH_SIZE := 128
 EPOCHS := 50
@@ -26,15 +27,11 @@ set_up: $(KAGGLE_JSON)
 # Default target to train the model
 train: $(DATASET_PATH)
 	python train.py --dataset_path $(DATASET_PATH) --model_name $(MODEL_NAME) --batch_size $(BATCH_SIZE) --epochs $(EPOCHS) --lr $(LEARNING_RATE) --weight_decay $(WEIGHT_DECAY)
-
-
-RAWDATA_PATH := "/project/hnguyen2/mvu9/datasets/chexpert" 
  
 # Download data from Kaggle
 download_data:
 	kaggle datasets download -d $(KAGGLE_DATASET) -p $(DATASET_PATH)
 	unzip $(DATASET_PATH)/chexpert-v10-small.zip -d $(RAWDATA_PATH)
-	rm $(DATASET_PATH)/chexpert-v10-small.zip
 
 # Dependency: Check if kaggle.json exists
 $(KAGGLE_JSON):
