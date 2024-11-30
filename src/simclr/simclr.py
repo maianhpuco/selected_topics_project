@@ -124,20 +124,33 @@ class NTXentLoss(torch.nn.Module):
 #         return h, x  # Return both the features and the projections 
      
 class ResNetSimCLR(nn.Module):
-
     def __init__(self, base_model, out_dim):
         super(ResNetSimCLR, self).__init__()
-        self.resnet_dict = {"resnet18": models.resnet18(pretrained=True, norm_layer=nn.InstanceNorm2d),
-                            "resnet50": models.resnet50(pretrained=True, norm_layer=nn.InstanceNorm2d)}
+        
+        # Use timm to create the model
+        self.model = timm.create_model(base_model, pretrained=True, num_classes=0)  # `num_classes=0` to remove classification head
+        print(f"Feature extractor: {base_model}")
+        
+        # Get the number of features in the backbone's output
+        num_ftrs = self.model.num_features
 
-        resnet = self._get_basemodel(base_model)
-        num_ftrs = resnet.fc.in_features
-
-        self.features = nn.Sequential(*list(resnet.children())[:-1])
-
-        # projection MLP
+        # Define the projection MLP (two-layer fully connected network)
         self.l1 = nn.Linear(num_ftrs, num_ftrs)
         self.l2 = nn.Linear(num_ftrs, out_dim)
+
+    # def __init__(self, base_model, out_dim):
+    #     super(ResNetSimCLR, self).__init__()
+    #     self.resnet_dict = {"resnet18": models.resnet18(pretrained=True, norm_layer=nn.InstanceNorm2d),
+    #                         "resnet50": models.resnet50(pretrained=True , norm_layer=nn.InstanceNorm2d)}
+
+    #     resnet = self._get_basemodel(base_model)
+    #     num_ftrs = resnet.fc.in_features
+
+    #     self.features = nn.Sequential(*list(resnet.children())[:-1])
+
+    #     # projection MLP
+    #     self.l1 = nn.Linear(num_ftrs, num_ftrs)
+    #     self.l2 = nn.Linear(num_ftrs, out_dim)
 
     def _get_basemodel(self, model_name):
         try:
