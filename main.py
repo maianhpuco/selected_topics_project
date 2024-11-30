@@ -50,6 +50,10 @@ if __name__ == '__main__':
         s=1, 
         # csv_path=config["dataset_path"]  # Pass dataset path from config
     ).get_data_loaders()
+    print("test dataloader")
+    batch_sample = next(iter(train_dataloader))
+    inputs, labels = batch_sample
+    print(inputs[0].shape, inputs[1].shape, labels.shape) 
     
     # Initialize model, optimizer, and scheduler
     model = ResNetSimCLR(
@@ -58,7 +62,6 @@ if __name__ == '__main__':
     )
     
     # Move model to the device (GPU or CPU)
-    model = model.to(device)
 
     # Create SimCLR instance
     simclr = SimCLR(train_dataloader, val_dataloader, config)
