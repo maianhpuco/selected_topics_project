@@ -95,80 +95,38 @@ class NTXentLoss(torch.nn.Module):
 
         return loss / (2 * self.batch_size) 
 
-# class ResNetSimCLR(nn.Module):
-
-#     def __init__(self, base_model, out_dim):
-#         super(ResNetSimCLR, self).__init__()
-
-#         # Use timm for model initialization
-#         self.model = timm.create_model(base_model, pretrained=True, num_classes=0)  # num_classes=0 because we don't want final classification layer
-#         print(f"Feature extractor: {base_model}")
-
-#         # Get the number of features from the last fully connected layer
-#         num_ftrs = self.model.fc.in_features  # Adjust this line depending on the model's final layer
-
-#         # Feature extraction layers
-#         self.features = nn.Sequential(*list(self.model.children())[:-1])  # Remove final classification layer
-
-#         # Projection MLP (fully connected layers)
-#         self.l1 = nn.Linear(num_ftrs, num_ftrs)
-#         self.l2 = nn.Linear(num_ftrs, out_dim)
-
-#     def forward(self, x):
-#         h = self.features(x)  # Extract features
-#         h = h.squeeze()  # Remove unnecessary dimensions
-
-#         x = self.l1(h)  # First MLP layer
-#         x = F.relu(x)  # Apply ReLU activation
-#         x = self.l2(x)  # Final MLP layer (project to `out_dim`)
-#         return h, x  # Return both the features and the projections 
-     
 class ResNetSimCLR(nn.Module):
     def __init__(self, base_model, out_dim):
         super(ResNetSimCLR, self).__init__()
-        
-        # Use timm to create the model
-        self.model = timm.create_model(base_model, pretrained=True, num_classes=0)  # `num_classes=0` to remove classification head
-        print(f"Feature extractor: {base_model}")
-        
-        # Get the number of features in the backbone's output
-        num_ftrs = self.model.num_features
+        self.resnet_dict = {
+            "resnet18": models.resnet18(pretrained=True),  # Default to BatchNorm2d
+            "resnet50": models.resnet50(pretrained=True)
+        }
 
-        # Define the projection MLP (two-layer fully connected network)
+        resnet = self._get_basemodel(base_model)
+        num_ftrs = resnet.fc.in_features
+
+        self.features = nn.Sequential(*list(resnet.children())[:-1])
+
+        # Projection MLP
         self.l1 = nn.Linear(num_ftrs, num_ftrs)
-        self.l2 = nn.Linear(num_ftrs, out_dim)
-
-    # def __init__(self, base_model, out_dim):
-    #     super(ResNetSimCLR, self).__init__()
-    #     self.resnet_dict = {"resnet18": models.resnet18(pretrained=True, norm_layer=nn.InstanceNorm2d),
-    #                         "resnet50": models.resnet50(pretrained=True , norm_layer=nn.InstanceNorm2d)}
-
-    #     resnet = self._get_basemodel(base_model)
-    #     num_ftrs = resnet.fc.in_features
-
-    #     self.features = nn.Sequential(*list(resnet.children())[:-1])
-
-    #     # projection MLP
-    #     self.l1 = nn.Linear(num_ftrs, num_ftrs)
-    #     self.l2 = nn.Linear(num_ftrs, out_dim)
-
+        self.l2 = nn.Linear(num_ftrs, out_dim) 
+        
     def _get_basemodel(self, model_name):
         try:
             model = self.resnet_dict[model_name]
             print("Feature extractor:", model_name)
             return model
-        except:
-            raise ("Invalid model name. Check the config file and pass one of: resnet18 or resnet50")
+        except KeyError:
+            raise ValueError("Invalid model name. Choose 'resnet18' or 'resnet50'.")
 
     def forward(self, x):
         h = self.features(x)
         h = h.squeeze()
-
         x = self.l1(h)
         x = F.relu(x)
         x = self.l2(x)
-        return h, x 
-    
+        return h, x   
 
 class SimCLR(object):
 
@@ -200,9 +158,7 @@ class SimCLR(object):
 
         loss = self.nt_xent_criterion(zis, zjs)
         return loss
-
     def train(self):
-
         train_loader, valid_loader = self.train_dataloader, self.val_dataloader
 
         model = ResNetSimCLR(**self.config["model"]).to(self.device)
@@ -211,21 +167,12 @@ class SimCLR(object):
             model = torch.nn.DataParallel(model, device_ids=range(device_n))
         model = self._load_pre_trained_weights(model)
         model = model.to(self.device)
-            
 
         optimizer = torch.optim.Adam(model.parameters(), 1e-5, weight_decay=eval(self.config['weight_decay']))
-
-#         scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=len(train_loader), eta_min=0,
-#                                                                last_epoch=-1)
-        
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.config['epochs'], eta_min=0,
-                                                               last_epoch=-1)
-        
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.config['epochs'], eta_min=0, last_epoch=-1)
 
         if apex_support and self.config['fp16_precision']:
-            model, optimizer = amp.initialize(model, optimizer,
-                                              opt_level='O2',
-                                              keep_batchnorm_fp32=True)
+            model, optimizer = amp.initialize(model, optimizer, opt_level='O2', keep_batchnorm_fp32=True)
 
         model_checkpoints_folder = os.path.join(self.writer.log_dir, 'checkpoints')
 
@@ -237,21 +184,16 @@ class SimCLR(object):
         best_valid_loss = np.inf
 
         for epoch_counter in range(self.config['epochs']):
-            for (xis, xjs), label in train_loader:
+            epoch_loss = 0  # Initialize the loss accumulator for the epoch
+            for batch_idx, ((xis, xjs), label) in enumerate(train_loader):  # Use enumerate for batch_idx
                 optimizer.zero_grad()
 
                 xis = xis.to(self.device)
                 xjs = xjs.to(self.device)
-                print("input shape")
-                print(xis.shape)
-                print(xjs.shape)
-                
 
                 loss = self._step(model, xis, xjs, n_iter)
-                print("loss:", loss.item())
-                # Print batch metrics
-                print(f"Epoch [{epoch_counter+1}/{self.config['epochs']}], Batch [{batch_idx+1}/{len(train_loader)}], Loss: {loss.item():.4f}") \
-            
+                epoch_loss += loss.item()  # Accumulate loss
+
                 if n_iter % self.config['log_every_n_steps'] == 0:
                     self.writer.add_scalar('train_loss', loss, global_step=n_iter)
 
@@ -264,22 +206,102 @@ class SimCLR(object):
                 optimizer.step()
                 n_iter += 1
 
-            # validate the model if requested
+            # Calculate average loss for the epoch
+            avg_epoch_loss = epoch_loss / len(train_loader)
+            print(f"Epoch [{epoch_counter + 1}/{self.config['epochs']}], Average Loss: {avg_epoch_loss:.4f}")
+
+            # Validate the model if requested
             if epoch_counter % self.config['eval_every_n_epochs'] == 0:
                 valid_loss = self._validate(model, valid_loader)
                 if valid_loss < best_valid_loss:
-                    # save the model weights
+                    # Save the model weights
                     best_valid_loss = valid_loss
                     torch.save(model.state_dict(), os.path.join(model_checkpoints_folder, 'model.pth'))
-                    print('saved')
+                    print('Model saved.')
 
                 self.writer.add_scalar('validation_loss', valid_loss, global_step=valid_n_iter)
                 valid_n_iter += 1
 
-            # warmup for the first 10 epochs
+            # Warmup for the first 10 epochs
             if epoch_counter >= 10:
                 scheduler.step()
-            self.writer.add_scalar('cosine_lr_decay', scheduler.get_lr()[0], global_step=n_iter)
+            self.writer.add_scalar('cosine_lr_decay', scheduler.get_lr()[0], global_step=n_iter) 
+    # def train(self):
+
+    #     train_loader, valid_loader = self.train_dataloader, self.val_dataloader
+
+    #     model = ResNetSimCLR(**self.config["model"]).to(self.device)
+    #     if self.config['n_gpu'] > 1:
+    #         device_n = len(eval(self.config['gpu_ids']))
+    #         model = torch.nn.DataParallel(model, device_ids=range(device_n))
+    #     model = self._load_pre_trained_weights(model)
+    #     model = model.to(self.device)
+            
+
+    #     optimizer = torch.optim.Adam(model.parameters(), 1e-5, weight_decay=eval(self.config['weight_decay']))
+        
+    #     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.config['epochs'], eta_min=0,
+    #                                                            last_epoch=-1)
+        
+
+    #     if apex_support and self.config['fp16_precision']:
+    #         model, optimizer = amp.initialize(model, optimizer,
+    #                                           opt_level='O2',
+    #                                           keep_batchnorm_fp32=True)
+
+    #     model_checkpoints_folder = os.path.join(self.writer.log_dir, 'checkpoints')
+
+    #     # save config file
+    #     _save_config_file(model_checkpoints_folder)
+
+    #     n_iter = 0
+    #     valid_n_iter = 0
+    #     best_valid_loss = np.inf
+
+    #     for epoch_counter in range(self.config['epochs']):
+    #         for (xis, xjs), label in train_loader:
+    #             optimizer.zero_grad()
+
+    #             xis = xis.to(self.device)
+    #             xjs = xjs.to(self.device)
+    #             print("input shape")
+    #             print(xis.shape)
+    #             print(xjs.shape)
+                
+
+    #             loss = self._step(model, xis, xjs, n_iter)
+    #             print("loss:", loss.item())
+    #             # Print batch metrics
+    #             print(f"Epoch [{epoch_counter+1}/{self.config['epochs']}], Batch [{batch_idx+1}/{len(train_loader)}], Loss: {loss.item():.4f}") \
+            
+    #             if n_iter % self.config['log_every_n_steps'] == 0:
+    #                 self.writer.add_scalar('train_loss', loss, global_step=n_iter)
+
+    #             if apex_support and self.config['fp16_precision']:
+    #                 with amp.scale_loss(loss, optimizer) as scaled_loss:
+    #                     scaled_loss.backward()
+    #             else:
+    #                 loss.backward()
+
+    #             optimizer.step()
+    #             n_iter += 1
+
+    #         # validate the model if requested
+    #         if epoch_counter % self.config['eval_every_n_epochs'] == 0:
+    #             valid_loss = self._validate(model, valid_loader)
+    #             if valid_loss < best_valid_loss:
+    #                 # save the model weights
+    #                 best_valid_loss = valid_loss
+    #                 torch.save(model.state_dict(), os.path.join(model_checkpoints_folder, 'model.pth'))
+    #                 print('saved')
+
+    #             self.writer.add_scalar('validation_loss', valid_loss, global_step=valid_n_iter)
+    #             valid_n_iter += 1
+
+    #         # warmup for the first 10 epochs
+    #         if epoch_counter >= 10:
+    #             scheduler.step()
+    #         self.writer.add_scalar('cosine_lr_decay', scheduler.get_lr()[0], global_step=n_iter)
 
     def _load_pre_trained_weights(self, model):
         try:
