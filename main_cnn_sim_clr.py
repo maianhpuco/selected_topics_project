@@ -9,45 +9,6 @@ from simclr import SimCLR, SimCLRDataloader, NTXentLoss, ResNetSimCLR
 from utils.train.cnn_simclr import train  # Correct import for the train function
 from utils.train.cnn_simclr import evaluate  # Assuming evaluate is also in cnn_simclr.py 
 
-# Function to parse command-line arguments
-def parse_args():
-    parser = argparse.ArgumentParser(description="SimCLR Training Configuration")
-
-    # Dataset parameters
-    parser.add_argument("--dataset_path", type=str, required=False,
-                        help="Path to the dataset.")
-
-    # Model parameters
-    parser.add_argument("--model_name", type=str, default="resnet50",
-                        help="Name of the model (default: resnet50).")
-    parser.add_argument("--out_dim", type=int, default=128,
-                        help="Output dimension for the projection head (default: 128).")
-
-    # Training parameters
-    parser.add_argument("--batch_size", type=int, default=256,
-                        help="Batch size for training (default: 256).")
-    parser.add_argument("--epochs", type=int, default=100,
-                        help="Number of epochs for training (default: 100).")
-    parser.add_argument("--lr", type=float, default=1e-3,
-                        help="Learning rate (default: 1e-3).")
-    parser.add_argument("--weight_decay", type=float, default=1e-6,
-                        help="Weight decay (default: 1e-6).")
-    parser.add_argument("--log_every_n_steps", type=int, default=100,
-                        help="Log training loss every n steps (default: 100).")
-
-    # Evaluation parameters
-    parser.add_argument("--eval_every_n_epochs", type=int, default=1,
-                        help="Evaluate the model every n epochs (default: 1).")
-
-    # Miscellaneous
-    parser.add_argument("--gpu_ids", type=str, default="0",
-                        help="Comma-separated list of GPU IDs to use (default: '0').")
-    parser.add_argument("--fp16_precision", action="store_true",
-                        help="Use mixed precision training.")
-    parser.add_argument("--config_file", type=str, default="configs/cnn_simclr.yaml",
-                        help="Path to the configuration YAML file (default: 'config.yaml').")
-
-    return parser.parse_args()
 
 # Function to load the configuration
 def load_config(args):
