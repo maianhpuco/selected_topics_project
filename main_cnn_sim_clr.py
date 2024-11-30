@@ -101,29 +101,29 @@ if __name__ == '__main__':
     # Assuming SimCLRDataloader returns a tuple with (train_loader, valid_loader)
 
     # Example batch from the train loader (to check the data loading)
-    batch_sample = next(iter(train_dataloader))
-    inputs, _ = batch_sample
-    print(inputs[0].shape, inputs[1].shape)  # Check shape of input tensors
+    # batch_sample = next(iter(train_dataloader))
+    # inputs, _ = batch_sample
+    # print(inputs[0].shape, inputs[1].shape)  # Check shape of input tensors
 
-    # # Initialize model, optimizer, and scheduler
-    # model = ResNetSimCLR(
-    #     base_model=config["model"]["name"], 
-    #     out_dim=config["model"]["out_dim"])
+    # Initialize model, optimizer, and scheduler
+    model = ResNetSimCLR(
+        base_model=config["model"]["name"], 
+        out_dim=config["model"]["out_dim"])
     
-    # optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"])
-    # scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=config["epochs"], eta_min=0)
+    optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"])
+    scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=config["epochs"], eta_min=0)
 
-    # # Move model to the device (GPU or CPU)
-    # model = model.to(device)
+    # Move model to the device (GPU or CPU)
+    model = model.to(device)
 
-    # # Create SimCLR instance
-    # simclr = SimCLR(dataset, config)
+    # Create SimCLR instance
+    simclr = SimCLR(dataset, config)
 
-    # # Train the model
-    # print("Starting training...")
-    # train(simclr, model, optimizer, scheduler)
+    # Train the model
+    print("Starting training...")
+    train(simclr, model, optimizer, scheduler)
 
-    # # Evaluate the model
-    # print("Evaluating the model...")
-    # evaluate_loss = evaluate(simclr, model)
-    # print(f"Final Validation Loss: {evaluate_loss:.4f}")
+    # Evaluate the model
+    print("Evaluating the model...")
+    evaluate_loss = evaluate(simclr, model)
+    print(f"Final Validation Loss: {evaluate_loss:.4f}")
