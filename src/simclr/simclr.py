@@ -244,7 +244,9 @@ class SimCLR(object):
                 xjs = xjs.to(self.device)
 
                 loss = self._step(model, xis, xjs, n_iter)
-
+                # Print batch metrics
+                print(f"Epoch [{epoch_counter+1}/{self.config['epochs']}], Batch [{batch_idx+1}/{len(train_loader)}], Loss: {loss.item():.4f}") \
+            
                 if n_iter % self.config['log_every_n_steps'] == 0:
                     self.writer.add_scalar('train_loss', loss, global_step=n_iter)
 
