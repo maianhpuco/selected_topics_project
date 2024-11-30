@@ -111,11 +111,13 @@ class ResNetSimCLR(nn.Module):
 
 class SimCLR(object):
 
-    def __init__(self, dataset, config):
+    def __init__(self,train_dataloader, val_dataloader , config):
         self.config = config
         self.device = self._get_device()
         self.writer = SummaryWriter()
-        self.dataset = dataset
+        self.train_dataloader = train_dataloader
+        self.val_dataloader = val_dataloader
+        
         self.nt_xent_criterion = NTXentLoss(self.device, config['batch_size'], **config['loss'])
 
     def _get_device(self):
@@ -140,9 +142,9 @@ class SimCLR(object):
 
     def train(self):
 
-        train_loader, valid_loader = self.dataset.get_data_loaders()
+        train_loader, valid_loader = self.train_dataloader, self.val_dataloader
 
-        model = ResNetSimCLR(**self.config["model"])# .to(self.device)
+        model = ResNetSimCLR(**self.config["model"]).to(self.device)
         if self.config['n_gpu'] > 1:
             device_n = len(eval(self.config['gpu_ids']))
             model = torch.nn.DataParallel(model, device_ids=range(device_n))
