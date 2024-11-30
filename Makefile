@@ -4,7 +4,8 @@ export
 
 
 DATASET_PATH := ../data
-RAWDATA_PATH := ../data/raw
+# RAWDATA_PATH := ../data/raw
+RAWDATA_PATH := "/project/hnguyen2/mvu9/datasets/chexpert" 
 MODEL_NAME := resnet50
 BATCH_SIZE := 128
 EPOCHS := 50
@@ -26,6 +27,9 @@ set_up: $(KAGGLE_JSON)
 train: $(DATASET_PATH)
 	python train.py --dataset_path $(DATASET_PATH) --model_name $(MODEL_NAME) --batch_size $(BATCH_SIZE) --epochs $(EPOCHS) --lr $(LEARNING_RATE) --weight_decay $(WEIGHT_DECAY)
 
+
+RAWDATA_PATH := "/project/hnguyen2/mvu9/datasets/chexpert" 
+ 
 # Download data from Kaggle
 download_data:
 	kaggle datasets download -d $(KAGGLE_DATASET) -p $(DATASET_PATH)

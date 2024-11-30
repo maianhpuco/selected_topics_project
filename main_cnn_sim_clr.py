@@ -1,12 +1,11 @@
 import argparse
 import yaml
-
-import os
-from parser import parse_args, load_config
+import torch
 from models.resnet_simclr import ResNetSimCLR
-from simclr import SimCLR, train, evaluate  # Assuming your main SimCLR class and functions are here
- 
- 
+from simclr import SimCLR, train, evaluate
+import os
+
+# Function to parse command-line arguments
 def parse_args():
     parser = argparse.ArgumentParser(description="SimCLR Training Configuration")
 
@@ -46,54 +45,63 @@ def parse_args():
 
     return parser.parse_args()
 
-
+# Function to load the configuration
 def load_config(args):
-    # Load default configurations from YAML file
+    config = {}
     if args.config_file and os.path.exists(args.config_file):
         with open(args.config_file, "r") as file:
             config = yaml.safe_load(file)
     else:
-        config = {}
+        print("Config file not found, using default values.")
 
-    # Override configurations with command-line arguments
-    config["dataset_path"] = args.dataset_path
+    config["dataset_path"] = args.dataset_path or config.get("dataset_path")
     config["model"] = {
-        "name": args.model_name,
-        "out_dim": args.out_dim
+        "name": args.model_name or config.get("model", {}).get("name", "resnet50"),
+        "out_dim": args.out_dim or config.get("model", {}).get("out_dim", 128)
     }
-    config["batch_size"] = args.batch_size
-    config["epochs"] = args.epochs
-    config["lr"] = args.lr
-    config["weight_decay"] = args.weight_decay
-    config["log_every_n_steps"] = args.log_every_n_steps
-    config["eval_every_n_epochs"] = args.eval_every_n_epochs
-    config["gpu_ids"] = args.gpu_ids
-    config["fp16_precision"] = args.fp16_precision
+    config["batch_size"] = args.batch_size or config.get("batch_size", 256)
+    config["epochs"] = args.epochs or config.get("epochs", 100)
+    config["lr"] = args.lr or config.get("lr", 1e-3)
+    config["weight_decay"] = args.weight_decay or config.get("weight_decay", 1e-6)
+    config["log_every_n_steps"] = args.log_every_n_steps or config.get("log_every_n_steps", 100)
+    config["eval_every_n_epochs"] = args.eval_every_n_epochs or config.get("eval_every_n_epochs", 1)
+    config["gpu_ids"] = args.gpu_ids or config.get("gpu_ids", "0")
+    config["fp16_precision"] = args.fp16_precision or config.get("fp16_precision", False)
 
     return config
 
-if __name__=='__main__':
+# Main function to run the training and evaluation
+if __name__ == '__main__':
     # Parse arguments
     args = parse_args()
 
     # Load configuration
     config = load_config(args)
 
+    # Check if CUDA is available and set the device
+    device = torch.device(f"cuda:{args.gpu_ids}" if torch.cuda.is_available() else "cpu")
+    print(f"Using device: {device}")
+
     # Dataset initialization (assuming your dataset object is defined elsewhere)
-    dataset = YourDatasetClass(config["dataset_path"])  # Replace with your dataset initialization logic
+    from dataset import YourDatasetClass  # Replace with your actual dataset class
+    dataset = YourDatasetClass(config["dataset_path"])
 
     # Initialize model, optimizer, and scheduler
-    model = ResNetSimCLR(name=config["model"]["name"], out_dim=config["model"]["out_dim"])
+    model = ResNetSimCLR(base_model=config["model"]["name"], out_dim=config["model"]["out_dim"])
     optimizer = torch.optim.Adam(model.parameters(), lr=config["lr"], weight_decay=config["weight_decay"])
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=config["epochs"], eta_min=0)
+
+    # Move model to the device (GPU or CPU)
+    model = model.to(device)
 
     # Create SimCLR instance
     simclr = SimCLR(dataset, config)
 
     # Train the model
+    print("Starting training...")
     train(simclr, model, optimizer, scheduler)
 
     # Evaluate the model
+    print("Evaluating the model...")
     evaluate_loss = evaluate(simclr, model)
     print(f"Final Validation Loss: {evaluate_loss:.4f}")
- 

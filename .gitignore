@@ -1,6 +1,16 @@
 kaggle.json
 # misc
 .DS_Store
+# Ignore Python bytecode and cache directories
+__pycache__/
+*.pyc
+*.pyo
+
+# Other gitignore entries (optional)
+*.log
+*.env
+*.DS_Store 
+
 
 env* 
 
