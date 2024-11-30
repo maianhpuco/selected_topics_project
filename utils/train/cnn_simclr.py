@@ -13,6 +13,7 @@ try:
     from apex import amp
 
     apex_support = True
+    
 except ImportError:
     print("Please install apex for mixed precision training from: https://github.com/NVIDIA/apex")
     apex_support = False

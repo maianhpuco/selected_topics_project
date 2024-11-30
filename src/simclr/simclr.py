@@ -41,3 +41,5 @@ class SimCLR(object):
         # Compute NT-Xent loss
         loss = self.nt_xent_criterion(zis, zjs)
         return loss
+    
+    

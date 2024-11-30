@@ -11,25 +11,6 @@ np.random.seed(0)
 import cv2
 import numpy as np
 
-np.random.seed(0)
-
-
-
-import numpy as np
-from torch.utils.data import DataLoader
-from torch.utils.data.sampler import SubsetRandomSampler
-import torchvision.transforms as transforms
-from torchvision import datasets
-import pandas as pd
-from PIL import Image
-from skimage import io, img_as_ubyte
-
-np.random.seed(0)
-import cv2
-import numpy as np
-
-np.random.seed(0)
-
 class GaussianBlur(object):
     # Implements Gaussian blur as described in the SimCLR paper
     def __init__(self, kernel_size, min=0.1, max=2.0):
@@ -54,9 +35,9 @@ class GaussianBlur(object):
 class SimCLRDataloader(object):
     def __init__(self, batch_size=32, num_workers=1, input_shape='(224, 224, 3)', s=1, csv_path=None, is_train=True):
         '''
-        csv_train =. './selected_topics_project/data/csv_files/train.csv' 
-        csv_val = './selected_topics_project/data/csv_files/valid.csv'
-        csv_test = './selected_topics_project/data/csv_files/test.csv' 
+        csv_train =. './data/csv_files/train.csv' 
+        csv_val = './data/csv_files/valid.csv'
+        csv_test = './data/csv_files/test.csv' 
         transform =  SimCLRDataTransform(data_augment)
         ''' 
         self.csv_path = csv_path 
@@ -113,15 +94,15 @@ class SimCLRDataTransform(object):
 
 
 
-if __name__=="__main__":
-    csv_path = './selected_topics_project/data/csv_files/train.csv'
+# if __name__=="__main__":
+#     csv_path = './selected_topics_project/data/csv_files/train.csv'
 
-    train_dataloader = SimCLRDataloader(
-        batch_size=32, 
-        num_workers=1, 
-        input_shape="(224, 224, 3)", 
-        s=1, 
-        csv_path=csv_path).get_data_loaders()  
-            batch_sample = next(iter(train_dataloader))
-        inputs, labels = batch_sample
-        print(inputs[0].shape, inputs[1].shape, labels.shape)  
+#     train_dataloader = SimCLRDataloader(
+#         batch_size=32, 
+#         num_workers=1, 
+#         input_shape="(224, 224, 3)", 
+#         s=1, 
+#         csv_path=csv_path).get_data_loaders()  
+#             batch_sample = next(iter(train_dataloader))
+#         inputs, labels = batch_sample
+#         print(inputs[0].shape, inputs[1].shape, labels.shape)  
