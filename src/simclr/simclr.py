@@ -158,6 +158,7 @@ class SimCLR(object):
 
         loss = self.nt_xent_criterion(zis, zjs)
         return loss
+    
     def train(self):
         train_loader, valid_loader = self.train_dataloader, self.val_dataloader
 
