@@ -12,6 +12,18 @@ import numpy as np
 import torch.nn as nn
 import torch.nn.functional as F
 import torchvision.models as models
+# Check if Apex is available for mixed precision training
+apex_support = False
+try:
+    sys.path.append('./apex')
+    from apex import amp
+    apex_support = True
+except ImportError:
+    print("Please install apex for mixed precision training from: https://github.com/NVIDIA/apex")
+    apex_support = False
+
+# Set the manual seed for reproducibility
+torch.manual_seed(0)
 
 class NTXentLoss(torch.nn.Module):
 
