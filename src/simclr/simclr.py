@@ -180,7 +180,9 @@ class SimCLR(object):
 
         # model_checkpoints_folder = os.path.join(self.writer.log_dir, 'checkpoints')
         timestamp = time.strftime("%Y-%m-%d_%H-%M")
-        model_checkpoints_folder = os.path.join(self.writer.log_dir, 'checkpoints', timestamp)
+        model_name = self.config["model"]["base_model"]  # Assuming base_model holds the name (e.g., "resnet18" or "resnet50")
+        
+        model_checkpoints_folder = os.path.join(self.writer.log_dir, f'checkpoints_{model_name}', timestamp)
  
         print("model checkpoints folder: ", model_checkpoints_folder)
         # Make sure the folder exists
@@ -238,20 +240,22 @@ class SimCLR(object):
             if valid_loss < best_valid_loss:
                 # Save the model weights with the name of the model architecture and the epoch number in the filename
                 best_valid_loss = valid_loss
-                model_name = self.config["model"]["base_model"]  # Assuming base_model holds the name (e.g., "resnet18" or "resnet50")
                 epoch_number = epoch_counter + 1  # Epoch number (1-based index)
-                model_filename = f'{model_name}_epoch{epoch_number}_model.pth'
+                model_filename = f'epoch_{epoch_number:03d}_model.pth'
                 
                 # Save the model with the updated filename and folder
                 torch.save(model.state_dict(), os.path.join(model_checkpoints_folder, model_filename))
                 print(f'Model saved as {model_filename} in {model_checkpoints_folder}.') 
-            # if epoch_counter % self.config['eval_every_n_epochs'] == 0:
-            #     valid_loss = self._validate(model, valid_loader)
-            #     if valid_loss < best_valid_loss:
-            #         # Save the model weights
-            #         best_valid_loss = valid_loss
-            #         torch.save(model.state_dict(), os.path.join(model_checkpoints_folder, 'model.pth'))
-            #         print('Model saved at: ', model_checkpoints_folder)
+                
+            if epoch_counter % self.config['eval_every_n_epochs'] == 0:
+                valid_loss = self._validate(model, valid_loader)
+                if valid_loss < best_valid_loss:
+                    # Save the model weights
+                    best_valid_loss = valid_loss
+                    epoch_number = epoch_counter + 1  # Epoch number (1-based index)
+                    model_filename = f'{model_name}_epoch{epoch_number:03d}_model.pth' 
+                    torch.save(model.state_dict(), os.path.join(model_checkpoints_folder,model_filename))
+                    print(f'Model saved as {model_filename} in {model_checkpoints_folder}.')  
 
                 self.writer.add_scalar('validation_loss', valid_loss, global_step=valid_n_iter)
                 valid_n_iter += 1
