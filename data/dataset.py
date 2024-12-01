@@ -19,7 +19,7 @@ class CheXpertDataSet(Dataset):
             
             row_counter = 0  # Initialize a counter for rows
             for line in csvReader:
-                if row_counter >= 20:  # Stop after 100 rows
+                if row_counter >= 300:  # Stop after 100 rows
                     break
     
             
