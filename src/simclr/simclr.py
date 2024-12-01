@@ -161,82 +161,6 @@ class SimCLR(object):
         loss = self.nt_xent_criterion(zis, zjs)
         return loss
 
-    def train(self):
-        train_loader, valid_loader = self.train_dataloader, self.val_dataloader
-
-        model = ResNetSimCLR(**self.config["model"]).to(self.device)
-        if self.config['n_gpu'] > 1:
-            device_n = len(eval(self.config['gpu_ids']))
-            model = torch.nn.DataParallel(model, device_ids=range(device_n))
-        model = self._load_pre_trained_weights(model)
-        model = model.to(self.device)
-
-        optimizer = torch.optim.Adam(model.parameters(), 1e-5, weight_decay=eval(self.config['weight_decay']))
-        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.config['epochs'], eta_min=0, last_epoch=-1)
-
-        if apex_support and self.config['fp16_precision']:
-            model, optimizer = amp.initialize(model, optimizer, opt_level='O2', keep_batchnorm_fp32=True)
-
-        model_checkpoints_folder = os.path.join(self.writer.log_dir, 'checkpoints')
-
-        # save config file
-        _save_config_file(model_checkpoints_folder)
-
-        n_iter = 0
-        valid_n_iter = 0
-        best_valid_loss = np.inf
-
-        for epoch_counter in range(self.config['epochs']):
-            start_time = time.time()  # Record start time for the epoch
-            
-            epoch_loss = 0  # Initialize the loss accumulator for the epoch
-            for batch_idx, ((xis, xjs), label) in enumerate(train_loader):  # Use enumerate for batch_idx
-                optimizer.zero_grad()
-
-                xis = xis.to(self.device)
-                xjs = xjs.to(self.device)
-
-                loss = self._step(model, xis, xjs, n_iter)
-                epoch_loss += loss.item()  # Accumulate loss
-
-                if n_iter % self.config['log_every_n_steps'] == 0:
-                    self.writer.add_scalar('train_loss', loss, global_step=n_iter)
-
-                if apex_support and self.config['fp16_precision']:
-                    with amp.scale_loss(loss, optimizer) as scaled_loss:
-                        scaled_loss.backward()
-                else:
-                    loss.backward()
-
-                optimizer.step()
-                n_iter += 1
-
-            # Calculate average loss for the epoch
-            avg_epoch_loss = epoch_loss / len(train_loader)
-            print(f"Epoch [{epoch_counter + 1}/{self.config['epochs']}], Average Loss: {avg_epoch_loss:.4f}")
-
-            # Validate the model if requested
-            if epoch_counter % self.config['eval_every_n_epochs'] == 0:
-                valid_loss = self._validate(model, valid_loader)
-                if valid_loss < best_valid_loss:
-                    # Save the model weights
-                    best_valid_loss = valid_loss
-                    torch.save(model.state_dict(), os.path.join(model_checkpoints_folder, 'model.pth'))
-                    print('Model saved.')
-
-                self.writer.add_scalar('validation_loss', valid_loss, global_step=valid_n_iter)
-                valid_n_iter += 1
-
-            # Warmup for the first 10 epochs
-            if epoch_counter >= 10:
-                scheduler.step()
-            self.writer.add_scalar('cosine_lr_decay', scheduler.get_lr()[0], global_step=n_iter)  
-
-            # Record and print time taken for the epoch
-            end_time = time.time()
-            epoch_time = end_time - start_time
-            print(f"Time taken for Epoch {epoch_counter + 1}: {epoch_time:.2f} seconds")
- 
     # def train(self):
     #     train_loader, valid_loader = self.train_dataloader, self.val_dataloader
 
@@ -263,6 +187,8 @@ class SimCLR(object):
     #     best_valid_loss = np.inf
 
     #     for epoch_counter in range(self.config['epochs']):
+    #         start_time = time.time()  # Record start time for the epoch
+            
     #         epoch_loss = 0  # Initialize the loss accumulator for the epoch
     #         for batch_idx, ((xis, xjs), label) in enumerate(train_loader):  # Use enumerate for batch_idx
     #             optimizer.zero_grad()
@@ -304,83 +230,99 @@ class SimCLR(object):
     #         # Warmup for the first 10 epochs
     #         if epoch_counter >= 10:
     #             scheduler.step()
-    #         self.writer.add_scalar('cosine_lr_decay', scheduler.get_lr()[0], global_step=n_iter) 
-    # def train(self):
+    #         self.writer.add_scalar('cosine_lr_decay', scheduler.get_lr()[0], global_step=n_iter)  
 
-    #     train_loader, valid_loader = self.train_dataloader, self.val_dataloader
+    #         # Record and print time taken for the epoch
+    #         end_time = time.time()
+    #         epoch_time = end_time - start_time
+    #         print(f"Time taken for Epoch {epoch_counter + 1}: {epoch_time:.2f} seconds")
+ 
+    def train(self):
+        train_loader, valid_loader = self.train_dataloader, self.val_dataloader
 
-    #     model = ResNetSimCLR(**self.config["model"]).to(self.device)
-    #     if self.config['n_gpu'] > 1:
-    #         device_n = len(eval(self.config['gpu_ids']))
-    #         model = torch.nn.DataParallel(model, device_ids=range(device_n))
-    #     model = self._load_pre_trained_weights(model)
-    #     model = model.to(self.device)
+        model = ResNetSimCLR(**self.config["model"]).to(self.device)
+        if self.config['n_gpu'] > 1:
+            device_n = len(eval(self.config['gpu_ids']))
+            model = torch.nn.DataParallel(model, device_ids=range(device_n))
+
+        model = self._load_pre_trained_weights(model)
+        model = model.to(self.device)
+
+        optimizer = torch.optim.Adam(model.parameters(), 1e-5, weight_decay=eval(self.config['weight_decay']))
+        scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.config['epochs'], eta_min=0, last_epoch=-1)
+
+        if apex_support and self.config['fp16_precision']:
+            model, optimizer = amp.initialize(model, optimizer, opt_level='O2', keep_batchnorm_fp32=True)
+
+        model_checkpoints_folder = os.path.join(self.writer.log_dir, 'checkpoints')
+
+        # Save config file
+        _save_config_file(model_checkpoints_folder)
+
+        n_iter = 0
+        valid_n_iter = 0
+        best_valid_loss = np.inf
+
+        for epoch_counter in range(self.config['epochs']):
+            start_time = time.time()  # Record start time for the epoch
             
+            epoch_loss = 0  # Initialize the loss accumulator for the epoch
 
-    #     optimizer = torch.optim.Adam(model.parameters(), 1e-5, weight_decay=eval(self.config['weight_decay']))
-        
-    #     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=self.config['epochs'], eta_min=0,
-    #                                                            last_epoch=-1)
-        
+            # Use tqdm for progress bar
+            total_batches = len(train_loader)
+            with tqdm(enumerate(train_loader), total=total_batches, desc=f"Epoch {epoch_counter + 1}/{self.config['epochs']}") as t:
+                for batch_idx, ((xis, xjs), label) in t:
+                    optimizer.zero_grad()
 
-    #     if apex_support and self.config['fp16_precision']:
-    #         model, optimizer = amp.initialize(model, optimizer,
-    #                                           opt_level='O2',
-    #                                           keep_batchnorm_fp32=True)
+                    xis = xis.to(self.device)
+                    xjs = xjs.to(self.device)
 
-    #     model_checkpoints_folder = os.path.join(self.writer.log_dir, 'checkpoints')
+                    loss = self._step(model, xis, xjs, n_iter)
+                    epoch_loss += loss.item()  # Accumulate loss
 
-    #     # save config file
-    #     _save_config_file(model_checkpoints_folder)
+                    # Update tqdm with loss information
+                    t.set_postfix(loss=loss.item())
 
-    #     n_iter = 0
-    #     valid_n_iter = 0
-    #     best_valid_loss = np.inf
+                    # if n_iter % self.config['print_every_n_batches'] == 0:  # Print results after certain batches
+                    #     print(f"Epoch [{epoch_counter + 1}/{self.config['epochs']}], Batch [{batch_idx + 1}/{total_batches}], Loss: {loss.item():.4f}")
 
-    #     for epoch_counter in range(self.config['epochs']):
-    #         for (xis, xjs), label in train_loader:
-    #             optimizer.zero_grad()
+                    if n_iter % self.config['log_every_n_steps'] == 0:
+                        self.writer.add_scalar('train_loss', loss, global_step=n_iter)
 
-    #             xis = xis.to(self.device)
-    #             xjs = xjs.to(self.device)
-    #             print("input shape")
-    #             print(xis.shape)
-    #             print(xjs.shape)
-                
+                    if apex_support and self.config['fp16_precision']:
+                        with amp.scale_loss(loss, optimizer) as scaled_loss:
+                            scaled_loss.backward()
+                    else:
+                        loss.backward()
 
-    #             loss = self._step(model, xis, xjs, n_iter)
-    #             print("loss:", loss.item())
-    #             # Print batch metrics
-    #             print(f"Epoch [{epoch_counter+1}/{self.config['epochs']}], Batch [{batch_idx+1}/{len(train_loader)}], Loss: {loss.item():.4f}") \
-            
-    #             if n_iter % self.config['log_every_n_steps'] == 0:
-    #                 self.writer.add_scalar('train_loss', loss, global_step=n_iter)
+                    optimizer.step()
+                    n_iter += 1
 
-    #             if apex_support and self.config['fp16_precision']:
-    #                 with amp.scale_loss(loss, optimizer) as scaled_loss:
-    #                     scaled_loss.backward()
-    #             else:
-    #                 loss.backward()
+            # Calculate average loss for the epoch
+            avg_epoch_loss = epoch_loss / total_batches
+            print(f"Epoch [{epoch_counter + 1}/{self.config['epochs']}], Average Loss: {avg_epoch_loss:.4f}")
 
-    #             optimizer.step()
-    #             n_iter += 1
+            # Validate the model if requested
+            if epoch_counter % self.config['eval_every_n_epochs'] == 0:
+                valid_loss = self._validate(model, valid_loader)
+                if valid_loss < best_valid_loss:
+                    # Save the model weights
+                    best_valid_loss = valid_loss
+                    torch.save(model.state_dict(), os.path.join(model_checkpoints_folder, 'model.pth'))
+                    print('Model saved.')
 
-    #         # validate the model if requested
-    #         if epoch_counter % self.config['eval_every_n_epochs'] == 0:
-    #             valid_loss = self._validate(model, valid_loader)
-    #             if valid_loss < best_valid_loss:
-    #                 # save the model weights
-    #                 best_valid_loss = valid_loss
-    #                 torch.save(model.state_dict(), os.path.join(model_checkpoints_folder, 'model.pth'))
-    #                 print('saved')
+                self.writer.add_scalar('validation_loss', valid_loss, global_step=valid_n_iter)
+                valid_n_iter += 1
 
-    #             self.writer.add_scalar('validation_loss', valid_loss, global_step=valid_n_iter)
-    #             valid_n_iter += 1
+            # Warmup for the first 10 epochs
+            if epoch_counter >= 10:
+                scheduler.step()
+            self.writer.add_scalar('cosine_lr_decay', scheduler.get_lr()[0], global_step=n_iter)  
 
-    #         # warmup for the first 10 epochs
-    #         if epoch_counter >= 10:
-    #             scheduler.step()
-    #         self.writer.add_scalar('cosine_lr_decay', scheduler.get_lr()[0], global_step=n_iter)
+            # Record and print time taken for the epoch
+            end_time = time.time()
+            epoch_time = end_time - start_time
+            print(f"Time taken for Epoch {epoch_counter + 1}: {epoch_time:.2f} seconds") 
 
     def _load_pre_trained_weights(self, model):
         if self.config.get('fine_tune_from'):  # Check if fine_tune_from is set
