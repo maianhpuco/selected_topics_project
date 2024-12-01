@@ -253,7 +253,7 @@ class SimCLR(object):
                     # Save the model weights
                     best_valid_loss = valid_loss
                     epoch_number = epoch_counter + 1  # Epoch number (1-based index)
-                    model_filename = f'{model_name}_epoch{epoch_number:03d}_model.pth' 
+                    model_filename = f'epoch{epoch_number:03d}_model.pth' 
                     torch.save(model.state_dict(), os.path.join(model_checkpoints_folder,model_filename))
                     print(f'Model saved as {model_filename} in {model_checkpoints_folder}.')  
 
