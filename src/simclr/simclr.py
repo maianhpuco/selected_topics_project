@@ -237,15 +237,15 @@ class SimCLR(object):
 
             # Validate the model if requested
             # Inside your training loop, modify the model saving code:
-            if valid_loss < best_valid_loss:
-                # Save the model weights with the name of the model architecture and the epoch number in the filename
-                best_valid_loss = valid_loss
-                epoch_number = epoch_counter + 1  # Epoch number (1-based index)
-                model_filename = f'epoch_{epoch_number:03d}_model.pth'
+            # if valid_loss < best_valid_loss:
+            #     # Save the model weights with the name of the model architecture and the epoch number in the filename
+            #     best_valid_loss = valid_loss
+            #     epoch_number = epoch_counter + 1  # Epoch number (1-based index)
+            #     model_filename = f'epoch_{epoch_number:03d}_model.pth'
                 
-                # Save the model with the updated filename and folder
-                torch.save(model.state_dict(), os.path.join(model_checkpoints_folder, model_filename))
-                print(f'Model saved as {model_filename} in {model_checkpoints_folder}.') 
+            #     # Save the model with the updated filename and folder
+            #     torch.save(model.state_dict(), os.path.join(model_checkpoints_folder, model_filename))
+            #     print(f'Model saved as {model_filename} in {model_checkpoints_folder}.') 
                 
             if epoch_counter % self.config['eval_every_n_epochs'] == 0:
                 valid_loss = self._validate(model, valid_loader)
