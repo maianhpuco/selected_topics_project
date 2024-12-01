@@ -61,7 +61,6 @@ class SimCLRDataloader(object):
         if self.is_train is True: 
             data_augment = self._get_simclr_pipeline_transform()
             # dataset = CheXpertDataSet(
-            print(self.csv_path)
             dataset = self.dataset_class(
                 self.data_folder,
                 self.csv_path, 
