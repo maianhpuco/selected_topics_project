@@ -1,7 +1,7 @@
 import torch
 from torch.utils.tensorboard import SummaryWriter
 import torch.nn.functional as F
-import tqdm 
+from tqdm import tqdm  
 import os
 import sys
 import numpy as np 
