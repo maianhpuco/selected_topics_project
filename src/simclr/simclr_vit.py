@@ -104,28 +104,13 @@ class ViTSimCLR(nn.Module):
         
         num_ftrs = self.model.embed_dim 
         print("num_fts", num_ftrs)
-        
-        # self.resnet_dict = {
-        #     "resnet18": models.resnet18(pretrained=True),  # Default to BatchNorm2d
-        #     "resnet50": models.resnet50(pretrained=True)
-        # }
 
-        # resnet = self._get_basemodel(base_model)
-        # num_ftrs = resnet.fc.in_features
-
-        # self.features = nn.Sequential(*list(resnet.children())[:-1])
 
         # Projection MLP
         self.l1 = nn.Linear(num_ftrs, num_ftrs)
         self.l2 = nn.Linear(num_ftrs, out_dim) 
         
-    # def _get_basemodel(self, model_name):
-    #     try:
-    #         model = self.resnet_dict[model_name]
-    #         print("Feature extractor:", model_name)
-    #         return model
-    #     except KeyError:
-    #         raise ValueError("Invalid model name. Choose 'resnet18' or 'resnet50'.")
+
         
     def forward(self, x):
         # Extract features using the forward_features method of the ViT model
@@ -139,13 +124,7 @@ class ViTSimCLR(nn.Module):
         x = self.l2(x)
         return h, x 
 
-    # def forward(self, x):
-    #     h = self.features(x)
-    #     h = h.squeeze()
-    #     x = self.l1(h)
-    #     x = F.relu(x)
-    #     x = self.l2(x)
-    #     return h, x   
+
 
 class SimCLR_ver2(object):
 
