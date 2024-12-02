@@ -5,7 +5,7 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
-from simclr_vit import SimCLR, SimCLRDataloader, NTXentLoss, ViTSimCLR
+from simclr import SimCLR, SimCLRDataloader, NTXentLoss, ViTSimCLR
 
  
 # Function to load the configuration
