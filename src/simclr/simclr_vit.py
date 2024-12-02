@@ -129,8 +129,9 @@ class ViTSimCLR(nn.Module):
         
     def forward(self, x):
         # Extract features using the forward_features method of the ViT model
-        h = self.model.forward_features(x)  # Returns feature embeddings
-        h = h.squeeze()  # Ensure no unnecessary dimensions
+        fts = self.model.forward_features(x)  # Returns feature embeddings
+        h = fts[:, 0, :]
+        # h = h.squeeze()  # Ensure no unnecessary dimensions
 
         # Apply projection head
         x = self.l1(h)
