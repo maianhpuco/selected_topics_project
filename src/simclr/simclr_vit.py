@@ -100,7 +100,7 @@ class NTXentLoss(torch.nn.Module):
 class ViTSimCLR(nn.Module):
     def __init__(self, base_model, out_dim):
         super(ViTSimCLR, self).__init__()
-        self.model = timm.create_model(base_model, pretrain=True, num_classes=0)
+        self.model = timm.create_model(base_model, pretrained=True, num_classes=0)
         
         num_ftrs = self.model.embed_dim 
         print("num_fts", num_ftrs)
@@ -146,7 +146,7 @@ class ViTSimCLR(nn.Module):
     #     x = self.l2(x)
     #     return h, x   
 
-class SimCLR(object):
+class SimCLR_ver2(object):
 
     def __init__(self,train_dataloader, val_dataloader , config):
         self.config = config
