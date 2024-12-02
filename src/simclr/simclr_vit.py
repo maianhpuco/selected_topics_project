@@ -119,13 +119,13 @@ class ViTSimCLR(nn.Module):
         self.l1 = nn.Linear(num_ftrs, num_ftrs)
         self.l2 = nn.Linear(num_ftrs, out_dim) 
         
-    def _get_basemodel(self, model_name):
-        try:
-            model = self.resnet_dict[model_name]
-            print("Feature extractor:", model_name)
-            return model
-        except KeyError:
-            raise ValueError("Invalid model name. Choose 'resnet18' or 'resnet50'.")
+    # def _get_basemodel(self, model_name):
+    #     try:
+    #         model = self.resnet_dict[model_name]
+    #         print("Feature extractor:", model_name)
+    #         return model
+    #     except KeyError:
+    #         raise ValueError("Invalid model name. Choose 'resnet18' or 'resnet50'.")
         
     def forward(self, x):
         # Extract features using the forward_features method of the ViT model

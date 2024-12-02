@@ -5,7 +5,7 @@ import os
 import sys
 sys.path.append(os.path.join(os.path.dirname(__file__), 'src'))
 
-from simclr import SimCLR, SimCLRDataloader, NTXentLoss, ViTSimCLR
+from simclr import SimCLR_ver2, SimCLRDataloader, NTXentLoss, ViTSimCLR
 
  
 # Function to load the configuration
@@ -64,7 +64,7 @@ if __name__ == '__main__':
     # Move model to the device (GPU or CPU)
 
     # Create SimCLR instance
-    simclr = SimCLR(train_dataloader, val_dataloader, config)
+    simclr = SimCLR_ver2(train_dataloader, val_dataloader, config)
     
     # Train the model
     print("Starting training...")
