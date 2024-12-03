@@ -5,7 +5,8 @@ import os
 import sys
 from torch.utils.data import DataLoader
 from torchvision import transforms
-from utils.train import train, evaluate_on_test_set  # Define these as per earlier instructions
+sys.path.append(os.path.join(os.path.dirname(__file__), 'utils', 'train'))
+from utils.train.cls import train  # Define these as per earlier instructions
 from dataset import CheXpertDataSet  # Replace with your dataset class
 
 import timm 
