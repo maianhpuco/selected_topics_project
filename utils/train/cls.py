@@ -94,12 +94,12 @@ def train(model, train_dataloader, val_dataloader, device, loss_criteria, optimi
             print(f"Epoch {epoch + 1}/{epochs}, Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy:.2f}%")
 
         # Save the last model at the end of each epoch
-        if checkpoint_dir:
-            # Add timestamp to the checkpoint filename
-            timestamp = time.strftime("%Y-%m-%d_%H-%M")
-            checkpoint_path = os.path.join(checkpoint_dir, f"model_last_{timestamp}.pth")
-            torch.save(model.state_dict(), checkpoint_path)
-            print(f"Last model saved to {checkpoint_path}") 
+    if checkpoint_dir:
+        # Add timestamp to the checkpoint filename
+        timestamp = time.strftime("%Y-%m-%d_%H-%M")
+        checkpoint_path = os.path.join(checkpoint_dir, f"model_last_{timestamp}.pth")
+        torch.save(model.state_dict(), checkpoint_path)
+        print(f"Last model saved to {checkpoint_path}") 
             
         # # Validation
         # if val_dataloader is not None:
