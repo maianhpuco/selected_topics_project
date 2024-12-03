@@ -126,11 +126,12 @@ class MultiLabelModel(nn.Module):
 if __name__ == '__main__':
     # Set device
     BATCH_SIZE = 64 
+    NUM_EPOCHS = 1
     MODEL_NAME = 'resnet18'
     
     base_model = MODEL_NAME
     
-    NUM_EPOCHS = 3
+    
     if MODEL_NAME == 'resnet18':
         WEIGHT_PATH =  'runs/Nov30_20-03-40_compute-0-8.local/checkpoints_resnet18/2024-11-30_20-03/epoch046_model.pth'
     elif MODEL_NAME == 'resnet50':
