@@ -76,13 +76,13 @@ class MultiLabelModel(nn.Module):
         elif base_model == "resnet50":
             self.model = models.resnet50(pretrained=False)
         elif base_model == "vit_base_patch16_224":
-            self.model = timm.create_model("vit_base_patch16_224", pretrained=True)  # Exclude FC layer for SSL
+            self.model = timm.create_model("vit_base_patch16_224", pretrained=False)  # Exclude FC layer for SSL
         else:
             raise ValueError("Unsupported base model. Choose from ['resnet18', 'resnet50', 'vit_base_patch16_224']")
         
-        # # Load SSL checkpoint if provided
-        # if ssl_checkpoint:
-        #     self._load_ssl_checkpoint(ssl_checkpoint)
+        # Load SSL checkpoint if provided
+        if ssl_checkpoint:
+            self._load_ssl_checkpoint(ssl_checkpoint)
         
         # Replace the final classification layer
         if base_model in ["resnet18", "resnet50"]:
