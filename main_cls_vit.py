@@ -14,7 +14,7 @@ import time
 import numpy as np 
 import torch.nn as nn
 from torchvision import models
-
+import timm 
 from sklearn.metrics import roc_auc_score, precision_score, recall_score, f1_score, hamming_loss, classification_report
 from tqdm import tqdm 
 def calculate_metrics(y_true, y_pred, y_prob):
