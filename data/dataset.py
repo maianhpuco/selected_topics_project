@@ -17,38 +17,38 @@ class CheXpertDataSet(Dataset):
         #     next(csvReader, None) # skip the header
             
             
-            row_counter = 0  # Initialize a counter for rows
-            for line in csvReader:
-                if row_counter >= 300:  # Stop after 100 rows
-                    break
-    
-            
-            
-            # for line in csvReader:
-                image_name = line[0]
-                label = line[5:]
+        row_counter = 0  # Initialize a counter for rows
+        for line in csvReader:
+            if row_counter >= 300:  # Stop after 100 rows
+                break
 
-                for i in range(14):
-                    if label[i]:
-                        a = float(label[i])
-                        if a == 1:
+        
+        
+        # for line in csvReader:
+            image_name = line[0]
+            label = line[5:]
+
+            for i in range(14):
+                if label[i]:
+                    a = float(label[i])
+                    if a == 1:
+                        label[i] = 1
+                    elif a == -1:
+                        if policy == "ones":
                             label[i] = 1
-                        elif a == -1:
-                            if policy == "ones":
-                                label[i] = 1
-                            elif policy == "zeroes":
-                                label[i] = 0
-                            else:
-                                label[i] = 0
+                        elif policy == "zeroes":
+                            label[i] = 0
                         else:
                             label[i] = 0
                     else:
                         label[i] = 0
+                else:
+                    label[i] = 0
 
-                image_names.append(data_folder + image_name)
-                labels.append(label)
-                
-                row_counter += 1 
+            image_names.append(data_folder + image_name)
+            labels.append(label)
+            
+            row_counter += 1 
 
         self.image_names = image_names
         self.labels = labels
