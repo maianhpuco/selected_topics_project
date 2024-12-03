@@ -76,13 +76,13 @@ class MultiLabelModel(nn.Module):
         elif base_model == "resnet50":
             self.model = models.resnet50(pretrained=False)
         elif base_model == "vit_base_patch16_224":
-            self.model = timm.create_model("vit_base_patch16_224", pretrained=False)  # Exclude FC layer for SSL
+            self.model = timm.create_model("vit_base_patch16_224", pretrained=True)  # Exclude FC layer for SSL
         else:
             raise ValueError("Unsupported base model. Choose from ['resnet18', 'resnet50', 'vit_base_patch16_224']")
         
-        # Load SSL checkpoint if provided
-        if ssl_checkpoint:
-            self._load_ssl_checkpoint(ssl_checkpoint)
+        # # Load SSL checkpoint if provided
+        # if ssl_checkpoint:
+        #     self._load_ssl_checkpoint(ssl_checkpoint)
         
         # Replace the final classification layer
         if base_model in ["resnet18", "resnet50"]:
@@ -138,7 +138,7 @@ if __name__ == '__main__':
     elif MODEL_NAME == 'resnet50':
         WEIGHT_PATH =  'runs/Nov30_20-19-46_compute-0-8.local/checkpoints_resnet50/2024-11-30_20-19/epoch046_model.pth'
     elif MODEL_NAME == 'vit_base_patch16_224':
-        WEIGHT_PATH =  'runs/Dec01_19-39-46_compute-0-8.local/checkpoints_vit_base_patch16_224/2024-12-01_19-39/epoch027_model.pth'
+        WEIGHT_PATH =  'runs/Dec01_19-39-46_compute-0-8.local/checkpoints_vit_base_patch16_224/2024-12-01_19-39/epoch030_model.pth'
     
     ssl_checkpoint_path = WEIGHT_PATH 
     
@@ -184,7 +184,7 @@ if __name__ == '__main__':
 
     # model = ResNetMultiLabel(num_classes).to(device)
     loss_criteria = torch.nn.BCEWithLogitsLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
 
     start_time = time.strftime("%Y-%m-%d_%H-%M")
     checkpoint_dir = f"./weight_cls/checkpoints_{start_time}" 
