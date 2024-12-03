@@ -9,7 +9,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'utils', 'train'))
 sys.path.append(os.path.join(os.path.dirname(__file__), 'data')) 
 
 from utils.train.cls import train  # Define these as per earlier instructions
-from data.dataset import CheXpertDataSet  # Replace with your dataset class
+from dataset import CheXpertDataSet  # Replace with your dataset class
 
 import timm 
 import torch.nn as nn
