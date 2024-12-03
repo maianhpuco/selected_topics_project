@@ -10,8 +10,7 @@ sys.path.append(os.path.join(os.path.dirname(__file__), 'data'))
 
 from utils.train.cls import train  # Define these as per earlier instructions
 from dataset import CheXpertDataSet  # Replace with your dataset class
-
-import timm 
+import time 
 import torch.nn as nn
 from torchvision import models
 
