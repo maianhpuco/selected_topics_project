@@ -127,7 +127,7 @@ class MultiLabelModel(nn.Module):
 if __name__ == '__main__':
     # Set device
     BATCH_SIZE = 64 
-    NUM_EPOCHS = 2
+    NUM_EPOCHS = 30
     MODEL_NAME = 'resnet18'
     
     base_model = MODEL_NAME
@@ -138,7 +138,7 @@ if __name__ == '__main__':
     elif MODEL_NAME == 'resnet50':
         WEIGHT_PATH =  'runs/Nov30_20-19-46_compute-0-8.local/checkpoints_resnet50/2024-11-30_20-19/epoch046_model.pth'
     elif MODEL_NAME == 'vit_base_patch16_224':
-        WEIGHT_PATH =  'runs/Dec01_19-39-46_compute-0-8.local/checkpoints_vit_base_patch16_224/2024-12-01_19-39/epoch030_model.pth'
+        WEIGHT_PATH =  'runs/Dec01_19-39-46_compute-0-8.local/checkpoints_vit_base_patch16_224/2024-12-01_19-39/epoch027_model.pth'
     
     ssl_checkpoint_path = WEIGHT_PATH 
     
