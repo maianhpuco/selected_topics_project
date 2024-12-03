@@ -131,7 +131,7 @@ if __name__ == '__main__':
     MODEL_NAME = 'resnet18'
     
     base_model = MODEL_NAME
-    
+    save_dir = './weight_cls/'
     
     if MODEL_NAME == 'resnet18':
         WEIGHT_PATH =  'runs/Nov30_20-03-40_compute-0-8.local/checkpoints_resnet18/2024-11-30_20-03/epoch046_model.pth'
@@ -223,7 +223,7 @@ if __name__ == '__main__':
     y_prob = np.array(y_prob)
 
     metrics = calculate_metrics(y_true, y_pred, y_prob)
-    
+     
     file_path = os.path.join(save_dir, f"{MODEL_NAME}_{start_time}.yaml")
 
     # Save metrics to a YAML file
