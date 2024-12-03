@@ -127,7 +127,7 @@ class MultiLabelModel(nn.Module):
 if __name__ == '__main__':
     # Set device
     BATCH_SIZE = 64 
-    NUM_EPOCHS = 30
+    NUM_EPOCHS = 50
     MODEL_NAME = 'vit_base_patch16_224'
     
     base_model = MODEL_NAME
@@ -184,7 +184,7 @@ if __name__ == '__main__':
 
     # model = ResNetMultiLabel(num_classes).to(device)
     loss_criteria = torch.nn.BCEWithLogitsLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
+    optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     start_time = time.strftime("%Y-%m-%d_%H-%M")
     checkpoint_dir = f"./weight_cls/checkpoints_{start_time}" 
