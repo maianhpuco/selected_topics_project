@@ -184,7 +184,7 @@ if __name__ == '__main__':
 
     # model = ResNetMultiLabel(num_classes).to(device)
     loss_criteria = torch.nn.BCEWithLogitsLoss()
-    optimizer = torch.optim.Adam(model.parameters(), lr=1e-3)
+    optimizer = torch.optim.Adam(model.parameters(), lr=1e-2)
 
     start_time = time.strftime("%Y-%m-%d_%H-%M")
     checkpoint_dir = f"./weight_cls/checkpoints_{start_time}" 
