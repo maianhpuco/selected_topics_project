@@ -127,7 +127,7 @@ class MultiLabelModel(nn.Module):
 if __name__ == '__main__':
     # Set device
     BATCH_SIZE = 64 
-    NUM_EPOCHS = 1
+    NUM_EPOCHS = 30
     MODEL_NAME = 'resnet18'
     
     base_model = MODEL_NAME
