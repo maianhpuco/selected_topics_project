@@ -231,6 +231,6 @@ if __name__ == '__main__':
         yaml.dump(metrics, f, default_flow_style=False)
 
     print(f"Metrics saved to {file_path}") 
-    print(metrics)
+    print(metrics[0])
         
     
