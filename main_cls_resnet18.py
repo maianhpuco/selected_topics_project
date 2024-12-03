@@ -6,6 +6,8 @@ import sys
 from torch.utils.data import DataLoader
 from torchvision import transforms
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils', 'train'))
+sys.path.append(os.path.join(os.path.dirname(__file__), 'data', 'dataset'))
+
 from utils.train.cls import train  # Define these as per earlier instructions
 from dataset import CheXpertDataSet  # Replace with your dataset class
 
