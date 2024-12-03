@@ -24,7 +24,7 @@ class CheXpertDataSet(Dataset):
     
             
             
-            for line in csvReader:
+            # for line in csvReader:
                 image_name = line[0]
                 label = line[5:]
 
