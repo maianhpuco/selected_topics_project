@@ -187,7 +187,7 @@ if __name__ == '__main__':
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     start_time = time.strftime("%Y-%m-%d_%H-%M")
-    checkpoint_dir = f"./weight_cls/checkpoints_{start_time}" 
+    checkpoint_dir = f"./weight_cls/vit_checkpoints_{start_time}" 
 
     trained_model = train(
         model, 
