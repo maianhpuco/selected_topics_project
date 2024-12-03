@@ -133,7 +133,7 @@ if __name__ == '__main__':
         WEIGHT_PATH =  'runs/Nov30_20-03-40_compute-0-8.local/checkpoints_resnet18/2024-11-30_20-03/epoch046_model.pth'
     elif MODEL_NAME == 'resnet50':
         WEIGHT_PATH =  'runs/Nov30_20-19-46_compute-0-8.local/checkpoints_resnet50/2024-11-30_20-19/epoch046_model.pth'
-    elif MODEL_NAME == 'vit_base_patch16_224'
+    elif MODEL_NAME == 'vit_base_patch16_224':
         WEIGHT_PATH =  'runs/Dec01_19-39-46_compute-0-8.local/checkpoints_vit_base_patch16_224/2024-12-01_19-39/epoch030_model.pth'
     
     ssl_checkpoint_path = WEIGHT_PATH 
