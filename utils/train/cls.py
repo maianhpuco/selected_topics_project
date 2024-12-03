@@ -88,28 +88,40 @@ def train(model, train_dataloader, val_dataloader, device, loss_criteria, optimi
         # Train for one epoch
         train_loss, train_accuracy = train_one_epoch(model, train_dataloader, device, loss_criteria, optimizer, mb)
         print(f"Epoch {epoch + 1}/{epochs}, Training Loss: {train_loss:.4f}, Training Accuracy: {train_accuracy:.2f}%")
-
         # Validation
         if val_dataloader is not None:
             val_loss, val_accuracy = validate(model, val_dataloader, device, loss_criteria, mb)
             print(f"Epoch {epoch + 1}/{epochs}, Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy:.2f}%")
 
-            # Save the best model
-            if val_accuracy > best_val_accuracy:
-                best_val_accuracy = val_accuracy
-                best_model_weights = model.state_dict()
+        # Save the last model at the end of each epoch
+        if checkpoint_dir:
+            # Add timestamp to the checkpoint filename
+            timestamp = time.strftime("%Y-%m-%d_%H-%M")
+            checkpoint_path = os.path.join(checkpoint_dir, f"model_last_{timestamp}.pth")
+            torch.save(model.state_dict(), checkpoint_path)
+            print(f"Last model saved to {checkpoint_path}") 
+            
+        # # Validation
+        # if val_dataloader is not None:
+        #     val_loss, val_accuracy = validate(model, val_dataloader, device, loss_criteria, mb)
+        #     print(f"Epoch {epoch + 1}/{epochs}, Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy:.2f}%")
 
-                if checkpoint_dir:
-                    # Add timestamp to the checkpoint filename
-                    timestamp = time.strftime("%Y-%m-%d_%H-%M")
-                    checkpoint_path = os.path.join(checkpoint_dir, f"model_best_{timestamp}.pth")
-                    torch.save(best_model_weights, checkpoint_path)
-                    print(f"Best model saved to {checkpoint_path}")
+        #     # Save the best model
+        #     if val_accuracy > best_val_accuracy:
+        #         best_val_accuracy = val_accuracy
+        #         best_model_weights = model.state_dict()
+
+        #         if checkpoint_dir:
+        #             # Add timestamp to the checkpoint filename
+        #             timestamp = time.strftime("%Y-%m-%d_%H-%M")
+        #             checkpoint_path = os.path.join(checkpoint_dir, f"model_best_{timestamp}.pth")
+        #             torch.save(best_model_weights, checkpoint_path)
+        #             print(f"Best model saved to {checkpoint_path}")
 
     # Load the best model weights before returning
-    if best_model_weights:
-        model.load_state_dict(best_model_weights)
-        print("Best model weights loaded.")
+    # if best_model_weights:
+    #     model.load_state_dict(best_model_weights)
+    #     print("Best model weights loaded.")
 
     return model  # Return the trained model
  

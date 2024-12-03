@@ -76,7 +76,7 @@ class MultiLabelModel(nn.Module):
         elif base_model == "resnet50":
             self.model = models.resnet50(pretrained=False)
         elif base_model == "vit_base_patch16_224":
-            self.model = timm.create_model("vit_base_patch16_224", pretrained=False, num_classes=0)  # Exclude FC layer for SSL
+            self.model = timm.create_model("vit_base_patch16_224", pretrained=False)  # Exclude FC layer for SSL
         else:
             raise ValueError("Unsupported base model. Choose from ['resnet18', 'resnet50', 'vit_base_patch16_224']")
         
