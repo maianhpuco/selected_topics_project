@@ -17,14 +17,14 @@ class CheXpertDataSet(Dataset):
             next(csvReader, None) # skip the header
             
             
-            row_counter = 0  # Initialize a counter for rows
-            for line in csvReader:
-                if row_counter >= 300:  # Stop after 100 rows
-                    break
+            # row_counter = 0  # Initialize a counter for rows
+            # for line in csvReader:
+            #     if row_counter >= 300:  # Stop after 100 rows
+            #         break
     
             
             
-            # for line in csvReader:
+            for line in csvReader:
                 image_name = line[0]
                 label = line[5:]
 
@@ -48,7 +48,7 @@ class CheXpertDataSet(Dataset):
                 image_names.append(data_folder + image_name)
                 labels.append(label)
                 
-                row_counter += 1 
+                # row_counter += 1 
 
         self.image_names = image_names
         self.labels = labels
