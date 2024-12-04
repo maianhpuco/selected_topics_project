@@ -138,6 +138,7 @@ def train(model, train_dataloader, val_dataloader, device, loss_criteria, optimi
         scaler = torch.cuda.amp.GradScaler()
 
     for epoch in mb:
+        start = time.time()
         mb.main_bar.comment = f"Epoch {epoch + 1}"
 
         # Train for one epoch
@@ -147,7 +148,8 @@ def train(model, train_dataloader, val_dataloader, device, loss_criteria, optimi
         # Validation
         if val_dataloader is not None:
             val_loss, val_accuracy = validate(model, val_dataloader, device, loss_criteria, mb, scaler)
-            print(f"Epoch {epoch + 1}/{epochs}, Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy:.2f}%")
+            d = int((time.time()-start)/60)
+            print(f"Epoch {epoch + 1}/{epochs}, Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy:.2f}% Time :{d} min")
 
         # Save the last model at the end of each epoch
         if checkpoint_dir:
