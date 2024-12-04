@@ -8,7 +8,7 @@ from torchvision import transforms
 sys.path.append(os.path.join(os.path.dirname(__file__), 'utils', 'train'))
 sys.path.append(os.path.join(os.path.dirname(__file__), 'data')) 
 
-from utils.train.cls2 import train  # Define these as per earlier instructions
+from utils.train.cls import train  # Define these as per earlier instructions
 from dataset import CheXpertDataSet  # Replace with your dataset class
 import time 
 import numpy as np 
@@ -17,7 +17,6 @@ from torchvision import models
 import timm 
 from sklearn.metrics import roc_auc_score, precision_score, recall_score, f1_score, hamming_loss, classification_report
 from tqdm import tqdm 
-
 def calculate_metrics(y_true, y_pred, y_prob):
     """
     Calculate metrics for multi-label classification, including AUC-ROC and a detailed classification report.
@@ -65,6 +64,8 @@ def calculate_metrics(y_true, y_pred, y_prob):
         class_report = "Cannot generate classification report. Invalid inputs."
 
     return metrics, class_report
+  
+  
 
 class MultiLabelModel(nn.Module):
     def __init__(self, base_model, num_classes, ssl_checkpoint=None):
@@ -120,10 +121,13 @@ class MultiLabelModel(nn.Module):
         self.model.load_state_dict(modified_state_dict, strict=False)
         print(f"Loaded SSL checkpoint weights from {checkpoint_path}") 
     
+     
+
+
 if __name__ == '__main__':
     # Set device
     BATCH_SIZE = 64 
-    NUM_EPOCHS = 30
+    NUM_EPOCHS = 100
     MODEL_NAME = 'vit_base_patch16_224'
     
     base_model = MODEL_NAME
@@ -134,7 +138,7 @@ if __name__ == '__main__':
     elif MODEL_NAME == 'resnet50':
         WEIGHT_PATH =  'runs/Nov30_20-19-46_compute-0-8.local/checkpoints_resnet50/2024-11-30_20-19/epoch046_model.pth'
     elif MODEL_NAME == 'vit_base_patch16_224':
-        WEIGHT_PATH =  'runs/selected/Dec01_19-39-46_compute-0-8.local/checkpoints_vit_base_patch16_224/2024-12-01_19-39/epoch027_model.pth'
+        WEIGHT_PATH =  'runs/Dec01_19-39-46_compute-0-8.local/checkpoints_vit_base_patch16_224/2024-12-01_19-39/epoch027_model.pth'
     
     ssl_checkpoint_path = WEIGHT_PATH 
     
@@ -146,11 +150,9 @@ if __name__ == '__main__':
     valid_csv_path = './data/csv_files/valid.csv'
     test_csv_path  = './data/csv_files/test.csv'
 
-    # Data transforms with augmentation
+    # Data transforms
     data_transforms = transforms.Compose([
         transforms.Resize((224, 224)),
-        transforms.RandomHorizontalFlip(),
-        transforms.RandomRotation(20),
         transforms.ToTensor()
     ])
 
@@ -161,8 +163,10 @@ if __name__ == '__main__':
 
     # DataLoaders
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=1, drop_last=False)
-    val_loader  = DataLoader(val_dataset, batch_size=BATCH_SIZE, shuffle=True, num_workers=1, drop_last=False)
-    test_loader = DataLoader(test_dataset, batch_size=BATCH_SIZE, shuffle=False, num_workers=1, drop_last=False)
+    val_loader  = DataLoader(val_dataset,    batch_size=BATCH_SIZE, shuffle=True, num_workers=1, drop_last=False)
+    test_loader = DataLoader(test_dataset,   batch_size=BATCH_SIZE, shuffle=False, num_workers=1, drop_last=False)
+
+    
 
     # Initialize the model
     num_classes = 14
@@ -174,16 +178,16 @@ if __name__ == '__main__':
 
     # Move model to device
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    model = model.to(device)
+    model = model.to(device)  
 
+
+
+    # model = ResNetMultiLabel(num_classes).to(device)
     loss_criteria = torch.nn.BCEWithLogitsLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     start_time = time.strftime("%Y-%m-%d_%H-%M")
     checkpoint_dir = f"./weight_cls/vit_checkpoints_{start_time}" 
-
-    # Initialize scaler for mixed precision training
-    scaler = torch.cuda.amp.GradScaler()
 
     trained_model = train(
         model, 
@@ -193,8 +197,7 @@ if __name__ == '__main__':
         loss_criteria, 
         optimizer, 
         NUM_EPOCHS, 
-        checkpoint_dir=checkpoint_dir, 
-        scaler=scaler) 
+        checkpoint_dir=checkpoint_dir) 
     
     # Calculate additional metrics
     y_true = []
@@ -206,8 +209,7 @@ if __name__ == '__main__':
         for batch_idx, (images, labels) in enumerate(tqdm(test_loader, desc="Validating", leave=False)):
             images = images.to(device)
             labels = labels.to(device)
-            with torch.cuda.amp.autocast():
-                outputs = trained_model(images)
+            outputs = trained_model(images)
 
             probabilities = torch.sigmoid(outputs).cpu().numpy()
             predictions = (probabilities > 0.5).astype(float)
@@ -230,3 +232,5 @@ if __name__ == '__main__':
 
     print(f"Metrics saved to {file_path}") 
     print(metrics[0])
+        
+    
