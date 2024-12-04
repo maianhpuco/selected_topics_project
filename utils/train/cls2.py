@@ -70,7 +70,58 @@ def validate(model, val_dataloader, device, loss_criteria, mb, scaler):
 
     return avg_loss, exact_match_accuracy 
 
-def train(model, train_dataloader, val_dataloader, device, loss_criteria, optimizer, epochs, checkpoint_dir=None):
+# def train(model, train_dataloader, val_dataloader, device, loss_criteria, optimizer, epochs, checkpoint_dir=None):
+#     """
+#     Train the model and save the best checkpoint with a timestamp.
+#     """
+#     mb = master_bar(range(epochs))
+#     best_model_weights = None
+#     best_val_accuracy = 0.0
+
+#     # Ensure checkpoint directory exists
+#     if checkpoint_dir and not os.path.exists(checkpoint_dir):
+#         os.makedirs(checkpoint_dir)
+
+#     # Initialize the mixed precision scaler
+#     scaler = torch.cuda.amp.GradScaler()
+
+#     for epoch in mb:
+#         mb.main_bar.comment = f"Epoch {epoch + 1}"
+
+#         # Train for one epoch
+#         train_loss, train_accuracy = train_one_epoch(model, train_dataloader, device, loss_criteria, optimizer, mb, scaler)
+#         print(f"Epoch {epoch + 1}/{epochs}, Training Loss: {train_loss:.4f}, Training Accuracy: {train_accuracy:.2f}%")
+        
+#         # Validation
+#         if val_dataloader is not None:
+#             val_loss, val_accuracy = validate(model, val_dataloader, device, loss_criteria, mb, scaler)
+#             print(f"Epoch {epoch + 1}/{epochs}, Validation Loss: {val_loss:.4f}, Validation Accuracy: {val_accuracy:.2f}%")
+
+#         # Save the last model at the end of each epoch
+#         if checkpoint_dir:
+#             timestamp = time.strftime("%Y-%m-%d_%H-%M")
+#             checkpoint_path = os.path.join(checkpoint_dir, f"model_last_{timestamp}.pth")
+#             torch.save(model.state_dict(), checkpoint_path)
+#             print(f"Last model saved to {checkpoint_path}") 
+
+#             # Save the best model based on validation accuracy
+#             if val_accuracy > best_val_accuracy:
+#                 best_val_accuracy = val_accuracy
+#                 best_model_weights = model.state_dict()
+
+#                 # Save the best model weights
+#                 if checkpoint_dir:
+#                     checkpoint_path = os.path.join(checkpoint_dir, f"model_best_{timestamp}.pth")
+#                     torch.save(best_model_weights, checkpoint_path)
+#                     print(f"Best model saved to {checkpoint_path}")
+
+#     # Load the best model weights before returning
+#     if best_model_weights:
+#         model.load_state_dict(best_model_weights)
+#         print("Best model weights loaded.")
+
+#     return model  # Return the trained model
+def train(model, train_dataloader, val_dataloader, device, loss_criteria, optimizer, epochs, checkpoint_dir=None, scaler=None):
     """
     Train the model and save the best checkpoint with a timestamp.
     """
@@ -82,8 +133,9 @@ def train(model, train_dataloader, val_dataloader, device, loss_criteria, optimi
     if checkpoint_dir and not os.path.exists(checkpoint_dir):
         os.makedirs(checkpoint_dir)
 
-    # Initialize the mixed precision scaler
-    scaler = torch.cuda.amp.GradScaler()
+    # Initialize the mixed precision scaler if not provided
+    if scaler is None:
+        scaler = torch.cuda.amp.GradScaler()
 
     for epoch in mb:
         mb.main_bar.comment = f"Epoch {epoch + 1}"
