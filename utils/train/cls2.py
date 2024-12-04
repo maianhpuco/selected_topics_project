@@ -161,11 +161,11 @@ def train(model, train_dataloader, val_dataloader, device, loss_criteria, optimi
                 best_val_accuracy = val_accuracy
                 best_model_weights = model.state_dict()
 
-                # Save the best model weights
-                if checkpoint_dir:
-                    checkpoint_path = os.path.join(checkpoint_dir, f"model_best_{timestamp}.pth")
-                    torch.save(best_model_weights, checkpoint_path)
-                    print(f"Best model saved to {checkpoint_path}")
+            # Save the best model weights
+            if checkpoint_dir:
+                checkpoint_path = os.path.join(checkpoint_dir, f"model_best_{timestamp}.pth")
+                torch.save(best_model_weights, checkpoint_path)
+                print(f"Best model saved to {checkpoint_path}")
 
     # Load the best model weights before returning
     if best_model_weights:
