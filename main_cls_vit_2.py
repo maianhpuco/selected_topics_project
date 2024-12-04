@@ -134,11 +134,11 @@ if __name__ == '__main__':
     save_dir = './weight_cls/'
     
     if MODEL_NAME == 'resnet18':
-        WEIGHT_PATH =  'runs/Nov30_20-03-40_compute-0-8.local/checkpoints_resnet18/2024-11-30_20-03/epoch046_model.pth'
+        WEIGHT_PATH =  'runs/selected/Nov30_20-03-40_compute-0-8.local/checkpoints_resnet18/2024-11-30_20-03/epoch046_model.pth'
     elif MODEL_NAME == 'resnet50':
-        WEIGHT_PATH =  'runs/Nov30_20-19-46_compute-0-8.local/checkpoints_resnet50/2024-11-30_20-19/epoch046_model.pth'
+        WEIGHT_PATH =  'runs/selected/Nov30_20-19-46_compute-0-8.local/checkpoints_resnet50/2024-11-30_20-19/epoch046_model.pth'
     elif MODEL_NAME == 'vit_base_patch16_224':
-        WEIGHT_PATH =  'runs/Dec01_19-39-46_compute-0-8.local/checkpoints_vit_base_patch16_224/2024-12-01_19-39/epoch027_model.pth'
+        WEIGHT_PATH =  'runs/selected/Dec01_19-39-46_compute-0-8.local/checkpoints_vit_base_patch16_224/2024-12-01_19-39/epoch027_model.pth'
     
     ssl_checkpoint_path = WEIGHT_PATH 
     
@@ -187,7 +187,7 @@ if __name__ == '__main__':
     optimizer = torch.optim.Adam(model.parameters(), lr=0.001)
 
     start_time = time.strftime("%Y-%m-%d_%H-%M")
-    checkpoint_dir = f"./weight_cls/vit_checkpoints_{start_time}" 
+    checkpoint_dir = f"/project/hnguyen2/mvu9/weight_cls/vit_checkpoints_{start_time}" 
 
     trained_model = train(
         model, 
