@@ -178,7 +178,7 @@ class SimCLR_ver2(object):
         timestamp = time.strftime("%Y-%m-%d_%H-%M")
         model_name = self.config["model"]["base_model"]  # Assuming base_model holds the name (e.g., "resnet18" or "resnet50")
         
-        model_checkpoints_folder = os.path.join(self.writer.log_dir, f'checkpoints_{model_name}', timestamp)
+        model_checkpoints_folder = os.path.join(f'{self.writer.log_dir}_vit', f'checkpoints_{model_name}', timestamp)
  
         print("model checkpoints folder: ", model_checkpoints_folder)
         # Make sure the folder exists
