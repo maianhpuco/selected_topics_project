@@ -126,7 +126,7 @@ class MultiLabelModel(nn.Module):
 
 if __name__ == '__main__':
     # Set device
-    BATCH_SIZE = 128
+    BATCH_SIZE = 64 
     NUM_EPOCHS = 100
     MODEL_NAME = 'vit_base_patch16_224'
     

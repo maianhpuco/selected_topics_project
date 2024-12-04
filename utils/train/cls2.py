@@ -4,7 +4,7 @@ from tqdm import tqdm
 from fastprogress import master_bar, progress_bar 
 import time  # Import time module for timestamp
 
-def train_one_epoch(model, train_dataloader, device, loss_criteria, optimizer, mb, scaler):
+def train_one_epoch(model, train_dataloader, device, loss_criteria, optimizer, mb, scaler=None):
     model.train()
     training_loss = 0
     exact_matches = 0
